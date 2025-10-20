@@ -1,35 +1,46 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Toaster } from "@/components/ui/sonner";
+import { queryClient } from "@/lib/queryClient";
+import { useAuthInit } from "@/hooks/useAuthInit";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { Layout } from "@/components/layout/Layout";
+import { Login } from "@/pages/Login";
+import { ActiveDeliveries } from "@/pages/ActiveDeliveries";
+import { DeliveryHistory } from "@/pages/DeliveryHistory";
+import { Stats } from "@/pages/Stats";
+import { Profile } from "@/pages/Profile";
 
-function App() {
-  const [count, setCount] = useState(0)
+function AppContent() {
+  useAuthInit();
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <BrowserRouter>
+      <Toaster />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route element={<ProtectedRoute />}>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Navigate to="/deliveries" replace />} />
+            <Route path="/deliveries" element={<ActiveDeliveries />} />
+            <Route path="/history" element={<DeliveryHistory />} />
+            <Route path="/stats" element={<Stats />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  );
+}
+
+export default App;
