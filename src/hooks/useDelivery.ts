@@ -29,8 +29,12 @@ export const usePickupDelivery = () => {
       driverId: string;
     }) => deliveryApi.pickupDelivery(deliveryId, orderId, driverId),
     onSuccess: () => {
-      // Invalidate and refetch deliveries
+      // Invalidate and refetch all delivery-related queries
       queryClient.invalidateQueries({ queryKey: ["deliveries"] });
+      queryClient.invalidateQueries({
+        queryKey: ["delivery"],
+        refetchType: "all",
+      });
       queryClient.invalidateQueries({ queryKey: ["driver-stats"] });
       toast.success("Delivery picked up successfully");
     },
@@ -56,8 +60,12 @@ export const useCompleteDelivery = () => {
       driverId: string;
     }) => deliveryApi.completeDelivery(deliveryId, orderId, driverId),
     onSuccess: () => {
-      // Invalidate and refetch deliveries
+      // Invalidate and refetch all delivery-related queries
       queryClient.invalidateQueries({ queryKey: ["deliveries"] });
+      queryClient.invalidateQueries({
+        queryKey: ["delivery"],
+        refetchType: "all",
+      });
       queryClient.invalidateQueries({ queryKey: ["driver-stats"] });
       toast.success("Delivery completed successfully");
     },

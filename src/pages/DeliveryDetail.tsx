@@ -72,11 +72,18 @@ export const DeliveryDetail = () => {
 
   const handlePickup = () => {
     if (user?.userId && delivery) {
-      pickupMutation.mutate({
-        deliveryId: deliveryId!,
-        orderId: delivery.orderId,
-        driverId: user.userId,
-      });
+      pickupMutation.mutate(
+        {
+          deliveryId: deliveryId!,
+          orderId: delivery.orderId,
+          driverId: user.userId,
+        },
+        {
+          onSuccess: () => {
+            navigate("/deliveries");
+          },
+        }
+      );
     }
   };
 

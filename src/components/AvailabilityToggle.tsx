@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { useToggleAvailability } from "@/hooks/useDelivery";
 import { toast } from "sonner";
 import {
@@ -60,17 +59,18 @@ export const AvailabilityToggle = ({
 
   return (
     <>
-      <div className="flex items-center space-x-3 bg-card border rounded-lg px-4 py-3">
+      <div className="flex items-center space-x-3 bg-card border rounded-lg px-4 py-3 mt-4">
         <Switch
           id="availability"
           checked={isAvailable}
           onCheckedChange={handleToggle}
           disabled={toggleMutation.isPending}
+          className="cursor-pointer"
         />
         <div className="flex-1">
-          <Label htmlFor="availability" className="cursor-pointer font-medium">
+          <p className="font-medium">
             {isAvailable ? "🟢 Online" : "🔴 Offline"}
-          </Label>
+          </p>
           <p className="text-sm text-muted-foreground">
             {isAvailable
               ? "Accepting delivery requests"
