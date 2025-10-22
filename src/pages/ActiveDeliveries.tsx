@@ -1,41 +1,33 @@
 import { useState } from "react";
-import {
-  useMyDeliveries,
-  usePickupDelivery,
-  useCompleteDelivery,
-} from "@/hooks/useDelivery";
-import { useAuthStore } from "@/store/authStore";
+import { useNavigate } from "react-router-dom";
+import { useMyDeliveries } from "@/hooks/useDelivery";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, MapPin, Clock, Phone, User } from "lucide-react";
+import { Package, MapPin, Store, DollarSign, ArrowRight } from "lucide-react";
 import type { Delivery } from "@/types";
 
 export const ActiveDeliveries = () => {
-  const [activeTab, setActiveTab] = useState("assigned");
-  const { user } = useAuthStore();
+  const [activeTab, setActiveTab] = useState("pending");
+  const navigate = useNavigate();
 
+  // Get deliveries with different statuses
   const { data: assignedData, isLoading: assignedLoading } =
     useMyDeliveries("assigned");
   const { data: pickedUpData, isLoading: pickedUpLoading } =
     useMyDeliveries("picked_up");
 
-  const pickupMutation = usePickupDelivery();
-  const completeMutation = useCompleteDelivery();
-
-  const handlePickup = (deliveryId: string, orderId: string) => {
-    if (user?.userId) {
-      pickupMutation.mutate({ deliveryId, orderId, driverId: user.userId });
-    }
-  };
-
-  const handleComplete = (deliveryId: string, orderId: string) => {
-    if (user?.userId) {
-      completeMutation.mutate({ deliveryId, orderId, driverId: user.userId });
-    }
-  };
+  // Filter by acceptance status
+  const pendingDeliveries =
+    assignedData?.deliveries?.filter((d) => d.acceptanceStatus === "pending") ||
+    [];
+  const acceptedDeliveries =
+    assignedData?.deliveries?.filter(
+      (d) => d.acceptanceStatus === "accepted"
+    ) || [];
+  const pickedUpDeliveries = pickedUpData?.deliveries || [];
 
   return (
     <div className="container mx-auto p-6">
@@ -48,50 +40,69 @@ export const ActiveDeliveries = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="assigned">
-            Assigned ({assignedData?.total || 0})
+          <TabsTrigger value="pending">
+            Pending ({pendingDeliveries.length})
+          </TabsTrigger>
+          <TabsTrigger value="accepted">
+            Accepted ({acceptedDeliveries.length})
           </TabsTrigger>
           <TabsTrigger value="picked_up">
-            Picked Up ({pickedUpData?.total || 0})
+            Picked Up ({pickedUpDeliveries.length})
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="assigned" className="mt-6">
+        <TabsContent value="pending" className="mt-6">
           {assignedLoading ? (
             <DeliverySkeletons />
-          ) : assignedData?.deliveries && assignedData.deliveries.length > 0 ? (
+          ) : pendingDeliveries.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {assignedData.deliveries.map((delivery) => (
+              {pendingDeliveries.map((delivery) => (
                 <DeliveryCard
                   key={delivery.deliveryId}
                   delivery={delivery}
-                  onAction={() =>
-                    handlePickup(delivery.deliveryId, delivery.orderId)
+                  onViewDetails={() =>
+                    navigate(`/deliveries/${delivery.deliveryId}`)
                   }
-                  actionLabel="Pick Up"
-                  actionPending={pickupMutation.isPending}
                 />
               ))}
             </div>
           ) : (
-            <EmptyState message="No assigned deliveries at the moment" />
+            <EmptyState message="No pending delivery requests" />
+          )}
+        </TabsContent>
+
+        <TabsContent value="accepted" className="mt-6">
+          {assignedLoading ? (
+            <DeliverySkeletons />
+          ) : acceptedDeliveries.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              {acceptedDeliveries.map((delivery) => (
+                <DeliveryCard
+                  key={delivery.deliveryId}
+                  delivery={delivery}
+                  onViewDetails={() =>
+                    navigate(`/deliveries/${delivery.deliveryId}`)
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No accepted deliveries at the moment" />
           )}
         </TabsContent>
 
         <TabsContent value="picked_up" className="mt-6">
           {pickedUpLoading ? (
             <DeliverySkeletons />
-          ) : pickedUpData?.deliveries && pickedUpData.deliveries.length > 0 ? (
+          ) : pickedUpDeliveries.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {pickedUpData.deliveries.map((delivery) => (
+              {pickedUpDeliveries.map((delivery) => (
                 <DeliveryCard
                   key={delivery.deliveryId}
                   delivery={delivery}
-                  onAction={() =>
-                    handleComplete(delivery.deliveryId, delivery.orderId)
+                  onViewDetails={() =>
+                    navigate(`/deliveries/${delivery.deliveryId}`)
                   }
-                  actionLabel="Complete"
-                  actionPending={completeMutation.isPending}
                 />
               ))}
             </div>
@@ -106,19 +117,25 @@ export const ActiveDeliveries = () => {
 
 interface DeliveryCardProps {
   delivery: Delivery;
-  onAction: () => void;
-  actionLabel: string;
-  actionPending: boolean;
+  onViewDetails: () => void;
 }
 
-function DeliveryCard({
-  delivery,
-  onAction,
-  actionLabel,
-  actionPending,
-}: DeliveryCardProps) {
+function DeliveryCard({ delivery, onViewDetails }: DeliveryCardProps) {
+  const getStatusBadge = () => {
+    if (delivery.acceptanceStatus === "pending") {
+      return <Badge variant="secondary">Pending</Badge>;
+    }
+    if (delivery.status === "picked_up") {
+      return <Badge>In Transit</Badge>;
+    }
+    return <Badge variant="outline">Accepted</Badge>;
+  };
+
   return (
-    <Card>
+    <Card
+      className="hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onViewDetails}
+    >
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
@@ -127,70 +144,61 @@ function DeliveryCard({
               Order #{delivery.orderId.slice(0, 8)}
             </CardTitle>
           </div>
-          <Badge
-            variant={delivery.status === "picked_up" ? "default" : "secondary"}
-          >
-            {delivery.status.replace("_", " ")}
-          </Badge>
+          {getStatusBadge()}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
+        {/* Restaurant Info */}
+        {delivery.restaurantName && (
+          <div className="flex items-start gap-2">
+            <Store className="h-4 w-4 text-muted-foreground mt-0.5" />
+            <div className="flex-1 text-sm">
+              <p className="font-medium">Pickup from:</p>
+              <p className="text-muted-foreground">{delivery.restaurantName}</p>
+              {delivery.restaurantAddress && (
+                <p className="text-muted-foreground text-xs">
+                  {delivery.restaurantAddress.street},{" "}
+                  {delivery.restaurantAddress.city}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Delivery Address */}
         {delivery.deliveryAddress && (
           <div className="flex items-start gap-2">
             <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
             <div className="flex-1 text-sm">
-              <p className="font-medium">Delivery Address:</p>
+              <p className="font-medium">Deliver to:</p>
               <p className="text-muted-foreground">
                 {delivery.deliveryAddress.street}
               </p>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {delivery.deliveryAddress.city},{" "}
-                {delivery.deliveryAddress.state}{" "}
-                {delivery.deliveryAddress.zipCode}
+                {delivery.deliveryAddress.state}
               </p>
             </div>
           </div>
         )}
 
-        {delivery.customerName && (
-          <div className="flex items-center gap-2 text-sm">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">Customer:</span>
-            <span className="text-muted-foreground">
-              {delivery.customerName}
+        {/* Delivery Fee */}
+        {delivery.deliveryFee && (
+          <div className="flex items-center justify-between pt-2 border-t">
+            <div className="flex items-center gap-2 text-sm">
+              <DollarSign className="h-4 w-4 text-green-600" />
+              <span className="font-medium">Your Earning:</span>
+            </div>
+            <span className="font-semibold text-green-600">
+              ${delivery.deliveryFee.toFixed(2)}
             </span>
           </div>
         )}
 
-        {delivery.customerPhone && (
-          <div className="flex items-center gap-2 text-sm">
-            <Phone className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">Phone:</span>
-            <span className="text-muted-foreground">
-              {delivery.customerPhone}
-            </span>
-          </div>
-        )}
-
-        {delivery.estimatedDeliveryTime && (
-          <div className="flex items-center gap-2 text-sm">
-            <Clock className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">Estimated Time:</span>
-            <span className="text-muted-foreground">
-              {new Date(delivery.estimatedDeliveryTime).toLocaleTimeString()}
-            </span>
-          </div>
-        )}
-
-        <div className="pt-2">
-          <Button
-            onClick={onAction}
-            disabled={actionPending}
-            className="w-full"
-          >
-            {actionPending ? "Processing..." : actionLabel}
-          </Button>
-        </div>
+        <Button className="w-full mt-3" variant="outline">
+          View Details
+          <ArrowRight className="h-4 w-4 ml-2" />
+        </Button>
       </CardContent>
     </Card>
   );

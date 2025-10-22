@@ -115,8 +115,11 @@ export class ApiService {
     return this.request<T>({ method: "PUT", url, data });
   }
 
+  protected async patch<T>(url: string, data?: unknown): Promise<T> {
+    return this.request<T>({ method: "PATCH", url, data });
+  }
+
   protected async delete<T>(url: string): Promise<T> {
     return this.request<T>({ method: "DELETE", url });
   }
 }
-

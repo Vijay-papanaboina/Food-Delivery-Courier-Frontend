@@ -78,3 +78,76 @@ export const useDriverStats = () => {
     staleTime: 20000,
   });
 };
+
+// Get full delivery details
+export const useDeliveryDetails = (deliveryId: string) => {
+  return useQuery({
+    queryKey: ["delivery", deliveryId],
+    queryFn: () => deliveryApi.getDeliveryDetails(deliveryId),
+    enabled: !!deliveryId,
+  });
+};
+
+// Toggle driver availability
+export const useToggleAvailability = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (isAvailable: boolean) =>
+      deliveryApi.toggleMyAvailability(isAvailable),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deliveries"] });
+      queryClient.invalidateQueries({ queryKey: ["driver-stats"] });
+    },
+  });
+};
+
+// Accept delivery
+export const useAcceptDelivery = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (deliveryId: string) => deliveryApi.acceptDelivery(deliveryId),
+    onSuccess: () => {
+      // Invalidate all delivery-related queries
+      queryClient.invalidateQueries({ queryKey: ["deliveries"] });
+      queryClient.invalidateQueries({
+        queryKey: ["delivery"],
+        refetchType: "all",
+      });
+      queryClient.invalidateQueries({ queryKey: ["driver-stats"] });
+      toast.success("Delivery accepted successfully!");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to accept delivery");
+    },
+  });
+};
+
+// Decline delivery
+export const useDeclineDelivery = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      deliveryId,
+      reason,
+    }: {
+      deliveryId: string;
+      reason?: string;
+    }) => deliveryApi.declineDelivery(deliveryId, reason),
+    onSuccess: () => {
+      // Invalidate all delivery-related queries
+      queryClient.invalidateQueries({ queryKey: ["deliveries"] });
+      queryClient.invalidateQueries({
+        queryKey: ["delivery"],
+        refetchType: "all",
+      });
+      queryClient.invalidateQueries({ queryKey: ["driver-stats"] });
+      toast.success("Delivery declined. Reassigning to another driver...");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to decline delivery");
+    },
+  });
+};

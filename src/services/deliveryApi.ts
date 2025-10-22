@@ -52,6 +52,46 @@ export class DeliveryApi extends ApiService {
     );
     return response.stats;
   };
+
+  // Get full delivery details
+  getDeliveryDetails = async (
+    deliveryId: string
+  ): Promise<{ message: string; delivery: Delivery }> => {
+    return this.get<{ message: string; delivery: Delivery }>(
+      `/api/delivery/${deliveryId}/details`
+    );
+  };
+
+  // Toggle driver availability (online/offline)
+  toggleMyAvailability = async (
+    isAvailable: boolean
+  ): Promise<{ message: string; isAvailable: boolean }> => {
+    return this.patch<{ message: string; isAvailable: boolean }>(
+      "/api/drivers/me/availability",
+      { isAvailable }
+    );
+  };
+
+  // Accept delivery request
+  acceptDelivery = async (
+    deliveryId: string
+  ): Promise<{ message: string; deliveryId: string }> => {
+    return this.post<{ message: string; deliveryId: string }>(
+      `/api/delivery/${deliveryId}/accept`,
+      {}
+    );
+  };
+
+  // Decline delivery request
+  declineDelivery = async (
+    deliveryId: string,
+    reason?: string
+  ): Promise<{ message: string; deliveryId: string }> => {
+    return this.post<{ message: string; deliveryId: string }>(
+      `/api/delivery/${deliveryId}/decline`,
+      { reason }
+    );
+  };
 }
 
 export const deliveryApi = new DeliveryApi();

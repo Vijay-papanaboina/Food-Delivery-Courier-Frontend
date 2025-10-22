@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Menu, LogOut, Sun, Moon } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { AvailabilityToggle } from "@/components/AvailabilityToggle";
 
 export const Header = () => {
   const { user } = useAuthStore();
@@ -45,7 +46,11 @@ export const Header = () => {
         <h1 className="text-xl font-semibold">Driver Dashboard</h1>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <div className="hidden sm:block">
+          <AvailabilityToggle />
+        </div>
+
         {user && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground hidden sm:inline">

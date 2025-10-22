@@ -43,6 +43,7 @@ export const DeliveryHistory = () => {
                     <TableHead>Order ID</TableHead>
                     <TableHead>Address</TableHead>
                     <TableHead>Completed At</TableHead>
+                    <TableHead className="text-right">Earning</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -81,6 +82,9 @@ export const DeliveryHistory = () => {
                         ) : (
                           <span className="text-muted-foreground">N/A</span>
                         )}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-green-600">
+                        ${delivery.deliveryFee?.toFixed(2) || "3.50"}
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">Completed</Badge>

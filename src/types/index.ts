@@ -48,6 +48,26 @@ export interface Delivery {
   restaurantAddress?: DeliveryAddress;
   customerName?: string;
   customerPhone?: string;
+  // Gig-worker model fields
+  acceptanceStatus?: "pending" | "accepted" | "declined";
+  deliveryFee?: number;
+  declinedByDrivers?: string[];
+  // Restaurant information
+  restaurantId?: string;
+  restaurantName?: string;
+  restaurantPhone?: string;
+  // Order information
+  orderItems?: OrderItem[];
+  orderTotal?: number;
+}
+
+// Order Item Types
+export interface OrderItem {
+  itemId: string;
+  name: string;
+  quantity: number;
+  price: number;
+  category?: string;
 }
 
 export interface DeliveryAddress {

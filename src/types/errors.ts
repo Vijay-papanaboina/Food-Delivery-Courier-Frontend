@@ -1,4 +1,4 @@
-import { AxiosError, AxiosResponse } from "axios";
+import { AxiosError, type AxiosResponse } from "axios";
 
 export interface AxiosErrorResponse extends AxiosError {
   response?: AxiosResponse<{
@@ -8,4 +8,3 @@ export interface AxiosErrorResponse extends AxiosError {
   }>;
   status?: number;
 }
-

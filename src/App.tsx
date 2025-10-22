@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { Layout } from "@/components/layout/Layout";
 import { Login } from "@/pages/Login";
 import { ActiveDeliveries } from "@/pages/ActiveDeliveries";
+import { DeliveryDetail } from "@/pages/DeliveryDetail";
 import { DeliveryHistory } from "@/pages/DeliveryHistory";
 import { Stats } from "@/pages/Stats";
 import { Profile } from "@/pages/Profile";
@@ -24,6 +25,10 @@ function AppContent() {
           <Route element={<Layout />}>
             <Route path="/" element={<Navigate to="/deliveries" replace />} />
             <Route path="/deliveries" element={<ActiveDeliveries />} />
+            <Route
+              path="/deliveries/:deliveryId"
+              element={<DeliveryDetail />}
+            />
             <Route path="/history" element={<DeliveryHistory />} />
             <Route path="/stats" element={<Stats />} />
             <Route path="/profile" element={<Profile />} />
