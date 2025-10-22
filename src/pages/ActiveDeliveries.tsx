@@ -157,8 +157,9 @@ function DeliveryCard({ delivery, onViewDetails }: DeliveryCardProps) {
               <p className="text-muted-foreground">{delivery.restaurantName}</p>
               {delivery.restaurantAddress && (
                 <p className="text-muted-foreground text-xs">
-                  {delivery.restaurantAddress.street},{" "}
-                  {delivery.restaurantAddress.city}
+                  {typeof delivery.restaurantAddress === "string"
+                    ? delivery.restaurantAddress
+                    : `${delivery.restaurantAddress.street}, ${delivery.restaurantAddress.city}`}
                 </p>
               )}
             </div>

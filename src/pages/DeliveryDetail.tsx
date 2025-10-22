@@ -184,12 +184,18 @@ export const DeliveryDetail = () => {
               <div className="flex items-start gap-2 text-sm">
                 <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div>
-                  <p>{delivery.restaurantAddress.street}</p>
-                  <p>
-                    {delivery.restaurantAddress.city},{" "}
-                    {delivery.restaurantAddress.state}{" "}
-                    {delivery.restaurantAddress.zipCode}
-                  </p>
+                  {typeof delivery.restaurantAddress === "string" ? (
+                    <p>{delivery.restaurantAddress}</p>
+                  ) : (
+                    <>
+                      <p>{delivery.restaurantAddress.street}</p>
+                      <p>
+                        {delivery.restaurantAddress.city},{" "}
+                        {delivery.restaurantAddress.state}{" "}
+                        {delivery.restaurantAddress.zipCode}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             )}
