@@ -15,7 +15,7 @@ export class DeliveryApi extends ApiService {
     const params = new URLSearchParams();
     if (status) params.append("status", status);
 
-    const url = `/api/delivery${
+    const url = `/api/delivery-service/delivery${
       params.toString() ? `?${params.toString()}` : ""
     }`;
     return this.get<{ deliveries: Delivery[]; total: number; message: string }>(
@@ -29,7 +29,11 @@ export class DeliveryApi extends ApiService {
     orderId: string,
     driverId: string
   ): Promise<{ message: string }> => {
-    return this.post("/api/delivery/pickup", { deliveryId, orderId, driverId });
+    return this.post("/api/delivery-service/delivery/pickup", {
+      deliveryId,
+      orderId,
+      driverId,
+    });
   };
 
   // Mark delivery as completed
@@ -38,7 +42,7 @@ export class DeliveryApi extends ApiService {
     orderId: string,
     driverId: string
   ): Promise<{ message: string }> => {
-    return this.post("/api/delivery/complete", {
+    return this.post("/api/delivery-service/delivery/complete", {
       deliveryId,
       orderId,
       driverId,
@@ -48,7 +52,7 @@ export class DeliveryApi extends ApiService {
   // Get driver stats
   getStats = async (): Promise<DriverStats> => {
     const response = await this.get<{ stats: DriverStats; message: string }>(
-      "/api/delivery/stats"
+      "/api/delivery-service/delivery/stats"
     );
     return response.stats;
   };
@@ -58,7 +62,7 @@ export class DeliveryApi extends ApiService {
     deliveryId: string
   ): Promise<{ message: string; delivery: Delivery }> => {
     return this.get<{ message: string; delivery: Delivery }>(
-      `/api/delivery/${deliveryId}/details`
+      `/api/delivery-service/delivery/${deliveryId}/details`
     );
   };
 
@@ -67,7 +71,7 @@ export class DeliveryApi extends ApiService {
     isAvailable: boolean
   ): Promise<{ message: string; isAvailable: boolean }> => {
     return this.patch<{ message: string; isAvailable: boolean }>(
-      "/api/drivers/me/availability",
+      "/api/delivery-service/drivers/me/availability",
       { isAvailable }
     );
   };
@@ -77,7 +81,7 @@ export class DeliveryApi extends ApiService {
     deliveryId: string
   ): Promise<{ message: string; deliveryId: string }> => {
     return this.post<{ message: string; deliveryId: string }>(
-      `/api/delivery/${deliveryId}/accept`,
+      `/api/delivery-service/delivery/${deliveryId}/accept`,
       {}
     );
   };
@@ -88,7 +92,7 @@ export class DeliveryApi extends ApiService {
     reason?: string
   ): Promise<{ message: string; deliveryId: string }> => {
     return this.post<{ message: string; deliveryId: string }>(
-      `/api/delivery/${deliveryId}/decline`,
+      `/api/delivery-service/delivery/${deliveryId}/decline`,
       { reason }
     );
   };

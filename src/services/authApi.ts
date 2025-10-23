@@ -2,7 +2,13 @@ import { config } from "@/config/env";
 import { useAuthStore } from "@/store/authStore";
 import { logger } from "@/lib/logger";
 import { ApiService } from "./baseApi";
-import type { User, BackendUser, LoginCredentials, LoginResponse, RefreshResponse } from "@/types";
+import type {
+  User,
+  BackendUser,
+  LoginCredentials,
+  LoginResponse,
+  RefreshResponse,
+} from "@/types";
 
 // Auth API
 export class AuthApi extends ApiService {
@@ -39,7 +45,7 @@ export class AuthApi extends ApiService {
     accessToken: string;
   }> => {
     const result = await this.post<LoginResponse>(
-      "/api/auth/login/driver",
+      "/api/user-service/auth/login/driver",
       credentials
     );
 
@@ -51,7 +57,7 @@ export class AuthApi extends ApiService {
   };
 
   validateToken = async (): Promise<{ message: string; user: BackendUser }> => {
-    return this.post("/api/auth/validate");
+    return this.post("/api/user-service/auth/validate");
   };
 
   refreshToken = async (): Promise<{
@@ -59,7 +65,7 @@ export class AuthApi extends ApiService {
     accessToken: string;
     user: BackendUser;
   }> => {
-    return this.post("/api/auth/refresh");
+    return this.post("/api/user-service/auth/refresh");
   };
 
   checkAuth = async (): Promise<{ isAuthenticated: boolean; user?: User }> => {
@@ -118,9 +124,8 @@ export class AuthApi extends ApiService {
   };
 
   logout = async (): Promise<{ message: string }> => {
-    return this.post("/api/auth/logout");
+    return this.post("/api/user-service/auth/logout");
   };
 }
 
 export const authApi = new AuthApi();
-
