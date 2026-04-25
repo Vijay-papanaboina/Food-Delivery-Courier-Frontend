@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMyDeliveries } from "@/hooks/useDelivery";
+import { useLocationTracking } from "@/hooks/useLocationTracking";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Package, MapPin, Store, DollarSign, ArrowRight } from "lucide-react";
+import { Package, MapPin, Store, DollarSign, ArrowRight, Navigation, WifiOff, Loader2 } from "lucide-react";
 import type { Delivery } from "@/types";
 
 export const ActiveDeliveries = () => {
@@ -29,13 +30,27 @@ export const ActiveDeliveries = () => {
     ) || [];
   const pickedUpDeliveries = pickedUpData?.deliveries || [];
 
+  // Track GPS location whenever the driver has any active work
+  const hasActiveDeliveries =
+    pendingDeliveries.length > 0 ||
+    acceptedDeliveries.length > 0 ||
+    pickedUpDeliveries.length > 0;
+
+  const { status: locationStatus, lastSentAt } = useLocationTracking({
+    enabled: hasActiveDeliveries,
+  });
+
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Active Deliveries</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your ongoing deliveries
-        </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Active Deliveries</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage your ongoing deliveries
+          </p>
+        </div>
+        {/* Location tracking indicator */}
+        <LocationStatusBadge status={locationStatus} lastSentAt={lastSentAt} />
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -234,3 +249,47 @@ function EmptyState({ message }: { message: string }) {
     </Card>
   );
 }
+
+interface LocationStatusBadgeProps {
+  status: "idle" | "active" | "error" | "sending" | "stale";
+  lastSentAt: Date | null;
+}
+
+function LocationStatusBadge({ status, lastSentAt }: LocationStatusBadgeProps) {
+  if (status === "idle") return null;
+
+  const config = {
+    active: {
+      icon: <Navigation className="h-3 w-3" />,
+      label: lastSentAt
+        ? `GPS active · ${lastSentAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`
+        : "GPS active",
+      className: "bg-green-500/10 text-green-700 border-green-300",
+    },
+    sending: {
+      icon: <Loader2 className="h-3 w-3 animate-spin" />,
+      label: "Sending location...",
+      className: "bg-blue-500/10 text-blue-700 border-blue-300",
+    },
+    stale: {
+      icon: <Navigation className="h-3 w-3 opacity-50" />,
+      label: "Location sync failed",
+      className: "bg-yellow-500/10 text-yellow-700 border-yellow-300",
+    },
+    error: {
+      icon: <WifiOff className="h-3 w-3" />,
+      label: "GPS unavailable",
+      className: "bg-red-500/10 text-red-700 border-red-300",
+    },
+  };
+
+  const { icon, label, className } = config[status];
+
+  return (
+    <div className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border font-medium ${className}`}>
+      {icon}
+      <span>{label}</span>
+    </div>
+  );
+}
+

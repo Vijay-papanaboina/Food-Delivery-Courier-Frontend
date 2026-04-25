@@ -96,6 +96,17 @@ export class DeliveryApi extends ApiService {
       { reason }
     );
   };
+
+  // Update driver's current GPS location
+  updateLocation = async (
+    latitude: number,
+    longitude: number
+  ): Promise<{ message: string; location: object; locationUpdatedAt: string }> => {
+    return this.put<{ message: string; location: object; locationUpdatedAt: string }>(
+      "/api/delivery-service/drivers/me/location",
+      { latitude, longitude }
+    );
+  };
 }
 
 export const deliveryApi = new DeliveryApi();
